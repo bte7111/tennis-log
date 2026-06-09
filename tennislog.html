@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>TennisLog</title>
+<style>
+:root{
+  --ball:#c8d44e;--p1:#4ade80;--p1b:rgba(74,222,128,.12);--p1d:rgba(74,222,128,.45);
+  --p2:#a78bfa;--p2b:rgba(167,139,250,.12);--p2d:rgba(167,139,250,.45);
+  --won:#fbbf24;--sf:rgba(8,20,11,.88);--sf2:rgba(14,28,17,.75);
+  --bd:rgba(180,220,180,.12);--bd2:rgba(180,220,180,.22);
+  --tx:#e4f0e6;--tx2:rgba(200,230,200,.52);--tx3:rgba(200,230,200,.28);
+  --grass:#3a8840;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;}
+body{font-family:'Helvetica Neue',Arial,sans-serif;
+  background:repeating-linear-gradient(90deg,rgba(255,255,255,.022) 0,rgba(255,255,255,.022) 1px,transparent 1px,transparent 54px),
+  repeating-linear-gradient(0deg,rgba(255,255,255,.022) 0,rgba(255,255,255,.022) 1px,transparent 1px,transparent 54px),
+  linear-gradient(155deg,#0c2010 0%,#08140a 60%,#101c13 100%);color:var(--tx);}
+.scr{display:none;flex-direction:column;height:100vh;max-width:480px;margin:0 auto;overflow:hidden;}
+.scr.on{display:flex;}
+.hdr{display:flex;align-items:center;justify-content:space-between;padding:8px 14px 4px;flex-shrink:0;}
+.logo{font-size:18px;font-weight:800;letter-spacing:-.5px;color:var(--ball);}
+.logo em{color:var(--tx);font-style:normal;font-weight:300;}
+.hdr-r{display:flex;gap:5px;align-items:center;}
+.ibtn{background:none;border:.5px solid var(--bd2);color:var(--tx2);font-size:11px;padding:5px 9px;border-radius:20px;cursor:pointer;display:flex;align-items:center;gap:4px;}
+.ibtn:active{opacity:.5;}
+.ibtn.danger{border-color:rgba(248,113,113,.35);color:rgba(248,113,113,.7);}
+.ibtn.end{border-color:rgba(200,212,78,.4);color:var(--ball);}
+.shdr{display:flex;align-items:center;gap:10px;padding:11px 14px 9px;flex-shrink:0;border-bottom:.5px solid var(--bd);}
+.bbtn{background:none;border:none;color:var(--tx2);cursor:pointer;display:flex;align-items:center;padding:4px 0;}
+.stit{font-size:15px;font-weight:600;color:var(--tx);}
+.body{flex:1;overflow-y:auto;overflow-x:hidden;padding:0 12px 8px;display:flex;flex-direction:column;gap:5px;align-content:flex-start;}
+.body::-webkit-scrollbar{width:0;}
+.sb{display:grid;grid-template-columns:1fr 24px 1fr;background:var(--sf);border:.5px solid var(--bd);border-radius:13px;padding:8px 9px 6px;align-items:center;flex-shrink:0;}
+.ps{text-align:center;}
+.pl{font-size:10px;color:var(--tx2);margin-bottom:2px;display:flex;align-items:center;justify-content:center;gap:4px;}
+.dot{width:6px;height:6px;border-radius:50%;display:inline-block;}
+.dot.a{background:var(--p1);}
+.dot.b{background:var(--p2);}
+.pv{font-size:30px;font-weight:700;line-height:1;letter-spacing:-2px;}
+.pv.ac{color:var(--p1);}
+.pv.bc{color:var(--p2);}
+.pg{font-size:10px;color:var(--tx3);margin-top:2px;}
+.dv{text-align:center;color:var(--tx3);font-size:15px;}
+.sbar{display:flex;gap:4px;flex-shrink:0;margin:-2px 0;}
+.seg{flex:1;height:2px;border-radius:2px;background:var(--bd);transition:background .3s;}
+.seg.dn{background:var(--p1);}
+.seg.ac2{background:rgba(74,222,128,.32);}
+.card{background:var(--sf);border:.5px solid var(--bd);border-radius:12px;padding:8px 11px;flex-shrink:0;}
+.clb{font-size:9px;color:var(--tx3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:5px;}
+.wg{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.wb{border:.5px solid var(--bd);border-radius:8px;padding:9px 6px;background:transparent;color:var(--tx);font-size:13px;font-weight:500;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;transition:background .12s,border-color .12s;}
+.wb.wa{border-color:var(--p1d);}
+.wb.wa:hover,.wb.wa.sl{background:var(--p1b);border-color:var(--p1);}
+.wb.wb2{border-color:var(--p2d);}
+.wb.wb2:hover,.wb.wb2.sl{background:var(--p2b);border-color:var(--p2);}
+.wb:active{transform:scale(.97);}
+.card23{background:var(--sf);border:.5px solid var(--bd);border-radius:12px;padding:8px 10px;flex-shrink:0;display:flex;gap:8px;align-items:flex-start;transition:opacity .2s;}
+.col-shot{display:flex;flex-direction:column;gap:4px;flex-shrink:0;width:112px;align-self:flex-start;}
+.shb{border:.5px solid var(--bd);border-radius:8px;padding:7px 6px 6px;background:transparent;color:var(--tx);font-size:11px;cursor:pointer;display:flex;flex-direction:row;align-items:center;gap:5px;width:100%;white-space:nowrap;transition:background .12s,border-color .12s;}
+.shb svg{flex-shrink:0;color:var(--tx2);}
+.shb:hover{background:rgba(255,255,255,.04);}
+.shb.sl{background:rgba(200,212,78,.12);border-color:rgba(200,212,78,.5);color:var(--ball);}
+.shb.sl svg{color:var(--ball);}
+.shb:active{transform:scale(.97);}
+.col-court{flex:1;min-width:0;transition:opacity .2s;display:flex;flex-direction:column;}
+.csvw{display:flex;justify-content:center;align-items:flex-start;}
+.csvw svg{width:100%;max-width:190px;}
+.zmk{pointer-events:none;text-anchor:middle;dominant-baseline:middle;}
+.cslb{font-size:7px;fill:rgba(255,255,255,.32);text-anchor:middle;}
+.cfb{width:100%;padding:10px;font-size:14px;font-weight:700;border-radius:12px;border:none;cursor:pointer;letter-spacing:.02em;transition:opacity .2s,transform .1s;flex-shrink:0;}
+.cfb:disabled{opacity:.2;cursor:not-allowed;background:rgba(255,255,255,.05);color:var(--tx3);}
+.cfb.pa{background:var(--p1);color:#041008;}
+.cfb.pb{background:var(--p2);color:#06001a;}
+.cfb:not(:disabled):active{transform:scale(.98);}
+.undo-row{display:flex;gap:6px;flex-shrink:0;}
+.undo-btn{flex:1;background:none;border:.5px solid var(--bd);color:var(--tx3);font-size:11px;padding:7px 6px;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;}
+.undo-btn:hover{color:var(--tx2);border-color:var(--bd2);}
+.undo-btn:active{opacity:.6;}
+.sbody{flex:1;overflow-y:auto;padding:11px 12px;display:flex;flex-direction:column;gap:6px;}
+.sbody::-webkit-scrollbar{width:0;}
+.li{background:var(--sf2);border:.5px solid var(--bd);border-radius:10px;padding:9px 11px;display:flex;gap:9px;align-items:flex-start;}
+.lnum{font-size:11px;color:var(--tx3);min-width:18px;padding-top:1px;}
+.lbd{flex:1;}
+.ltop{display:flex;align-items:center;gap:5px;margin-bottom:2px;flex-wrap:wrap;}
+.lsc{font-size:13px;font-weight:600;color:var(--tx);font-variant-numeric:tabular-nums;}
+.tag{font-size:10px;padding:1px 7px;border-radius:8px;font-weight:500;}
+.tag.pa{background:var(--p1b);color:var(--p1);border:.5px solid var(--p1d);}
+.tag.pb{background:var(--p2b);color:var(--p2);border:.5px solid var(--p2d);}
+.tag.gm{background:rgba(251,191,36,.12);color:var(--won);border:.5px solid rgba(251,191,36,.35);}
+.lsh{font-size:12px;color:var(--tx2);}
+.lco{font-size:10px;color:var(--tx3);margin-top:2px;}
+.empty{color:var(--tx3);font-size:13px;text-align:center;padding:40px 0;}
+.stbody{flex:1;overflow-y:auto;padding:11px 12px 20px;}
+.stbody::-webkit-scrollbar{width:0;}
+.ss{margin-bottom:16px;}
+.stit2{font-size:10px;color:var(--tx3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;}
+.scds{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:10px;}
+.scd{background:var(--sf);border:.5px solid var(--bd);border-radius:11px;padding:10px;text-align:center;}
+.sv{font-size:26px;font-weight:700;line-height:1;}
+.sv.ac{color:var(--p1);}
+.sv.bc{color:var(--p2);}
+.slb{font-size:10px;color:var(--tx3);margin-top:3px;}
+.brr{display:flex;align-items:center;gap:7px;margin-bottom:6px;}
+.brl{font-size:11px;color:var(--tx2);width:70px;flex-shrink:0;text-align:right;}
+.brt{flex:1;height:6px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden;}
+.brf{height:100%;border-radius:3px;}
+.brc{font-size:11px;color:var(--tx3);width:20px;flex-shrink:0;}
+.wrw{background:var(--sf);border:.5px solid var(--bd);border-radius:11px;padding:10px 13px;}
+.wrow{display:flex;height:9px;border-radius:5px;overflow:hidden;margin-bottom:6px;}
+.wp1{background:var(--p1);}
+.wp2{background:var(--p2);}
+.wlbs{display:flex;justify-content:space-between;}
+.wlb{font-size:11px;}
+.wlb.ac{color:var(--p1);}
+.wlb.bc{color:var(--p2);}
+.hwp{background:var(--sf);border:.5px solid var(--bd);border-radius:11px;padding:10px;}
+.hwi{display:flex;justify-content:center;}
+.hwi svg{max-width:185px;width:100%;}
+.hwleg{display:flex;justify-content:space-between;margin-top:7px;}
+.hwlg{font-size:10px;color:var(--tx3);display:flex;align-items:center;gap:4px;}
+.hwld{width:8px;height:8px;border-radius:2px;}
+.hct{font-size:9px;font-weight:700;fill:rgba(255,255,255,.95);text-anchor:middle;dominant-baseline:middle;pointer-events:none;}
+.pie-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.pie-card{background:var(--sf);border:.5px solid var(--bd);border-radius:11px;padding:10px;display:flex;flex-direction:column;align-items:center;gap:5px;}
+.pie-title{font-size:10px;color:var(--tx3);text-align:center;}
+.pie-legend{display:flex;flex-direction:column;gap:3px;width:100%;}
+.pie-leg-row{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--tx2);}
+.pie-leg-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.pie-leg-val{margin-left:auto;color:var(--tx3);font-variant-numeric:tabular-nums;}
+.game-cards{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:10px;}
+.game-card{background:var(--sf);border:.5px solid var(--bd);border-radius:11px;padding:10px 12px;}
+.game-card-lbl{font-size:10px;color:var(--tx3);margin-bottom:4px;display:flex;align-items:center;gap:4px;}
+.game-val{font-size:22px;font-weight:700;}
+.game-val.ac{color:var(--p1);}
+.game-val.bc{color:var(--p2);}
+.print-btn{background:rgba(200,212,78,.1);border:.5px solid rgba(200,212,78,.38);color:var(--ball);font-size:11px;padding:6px 12px;border-radius:20px;cursor:pointer;display:flex;align-items:center;gap:5px;margin:0 0 12px auto;}
+.print-btn:active{opacity:.6;}
+.dlg-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100;align-items:center;justify-content:center;}
+.dlg-backdrop.show{display:flex;}
+.dlg{background:#0f2014;border:.5px solid var(--bd2);border-radius:16px;padding:20px 20px 16px;max-width:300px;width:90%;text-align:center;}
+.dlg-title{font-size:15px;font-weight:600;margin-bottom:8px;color:var(--tx);}
+.dlg-msg{font-size:13px;color:var(--tx2);margin-bottom:18px;line-height:1.5;}
+.dlg-btns{display:flex;gap:8px;}
+.dlg-btn{flex:1;padding:10px;border-radius:10px;border:none;font-size:13px;font-weight:600;cursor:pointer;}
+.dlg-btn.cancel{background:rgba(255,255,255,.06);color:var(--tx2);}
+.dlg-btn.ok-red{background:#e05252;color:#fff;}
+.dlg-btn.ok-warn{background:#d97706;color:#fff;}
+@media print{
+  body{background:#fff;color:#111;overflow:visible;}
+  .scr{height:auto;overflow:visible;max-width:100%;}
+  .shdr{border-bottom:1px solid #ccc;}
+  .stbody{overflow:visible;padding:10px;}
+  .print-btn,.bbtn{display:none;}
+  .ss{break-inside:avoid;}
+  .scd,.wrw,.hwp,.pie-card,.game-card{background:#f8f8f8;border:1px solid #ddd;}
+  .sv.ac,.game-val.ac{color:#1a7a3e;}
+  .sv.bc,.game-val.bc{color:#6a4fc4;}
+  .wlb.ac{color:#1a7a3e;}
+  .wlb.bc{color:#6a4fc4;}
+  .wp1{background:#1a7a3e;}
+  .wp2{background:#6a4fc4;}
+}
+</style>
+</head>
+<body>
+
+<div class="dlg-backdrop" id="dlg-reset">
+  <div class="dlg">
+    <div class="dlg-title">リセットしますか？</div>
+    <div class="dlg-msg">スコアと全ての記録が削除されます。この操作は元に戻せません。</div>
+    <div class="dlg-btns">
+      <button class="dlg-btn cancel" onclick="closeDlg('dlg-reset')">キャンセル</button>
+      <button class="dlg-btn ok-red" onclick="doReset()">リセット</button>
+    </div>
+  </div>
+</div>
+<div class="dlg-backdrop" id="dlg-game">
+  <div class="dlg">
+    <div class="dlg-title">1ゲーム戻しますか？</div>
+    <div class="dlg-msg">現在のゲームのポイントをすべて削除します。ゲームが完了していた場合はゲームカウントも1戻します。</div>
+    <div class="dlg-btns">
+      <button class="dlg-btn cancel" onclick="closeDlg('dlg-game')">キャンセル</button>
+      <button class="dlg-btn ok-warn" onclick="doUndoGame()">戻す</button>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="scr on" id="sm">
+  <div class="hdr">
+    <div class="logo">Tennis<em>Log</em></div>
+    <div class="hdr-r">
+      <button class="ibtn danger" onclick="showDlg('dlg-reset')">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg>
+        リセット
+      </button>
+      <button class="ibtn" onclick="goH()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        履歴
+      </button>
+      <button class="ibtn end" onclick="goSt()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="18" y="3" width="4" height="18"/><rect x="10" y="8" width="4" height="13"/><rect x="2" y="13" width="4" height="8"/></svg>
+        統計 / 終了
+      </button>
+    </div>
+  </div>
+  <div class="body" id="mb">
+    <div class="sb">
+      <div class="ps"><div class="pl"><span class="dot a"></span>あなた</div><div class="pv ac" id="p1v">0</div><div class="pg" id="p1g">0 G</div></div>
+      <div class="dv">—</div>
+      <div class="ps"><div class="pl"><span class="dot b"></span>相手</div><div class="pv bc" id="p2v">0</div><div class="pg" id="p2g">0 G</div></div>
+    </div>
+    <div class="sbar"><div class="seg ac2" id="sg0"></div><div class="seg" id="sg1"></div><div class="seg" id="sg2"></div></div>
+    <div class="card">
+      <div class="clb">① だれが決めた？</div>
+      <div class="wg">
+        <button class="wb wa" id="bp1" onclick="selW('p1')">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>あなた
+        </button>
+        <button class="wb wb2" id="bp2" onclick="selW('p2')">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>相手
+        </button>
+      </div>
+    </div>
+    <!-- ②③ -->
+    <div class="card23" id="card23" style="opacity:.35;pointer-events:none">
+      <div class="col-shot">
+        <div class="clb" style="margin-bottom:4px;">② ショット</div>
+        <div id="sbtns" style="display:flex;flex-direction:column;gap:4px;">
+          <button class="shb" onclick="selSh('サービスエース',this)">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>サービスエース
+          </button>
+          <button class="shb" onclick="selSh('DF',this)">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>DF
+          </button>
+          <button class="shb" onclick="selSh('ストローク',this)">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><line x1="2" y1="12" x2="22" y2="12"/></svg>ストローク
+          </button>
+          <button class="shb" onclick="selSh('ボレー',this)">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/><path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2"/><path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"/><path d="M18 11a2 2 0 1 1 4 0v3a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg>ボレー
+          </button>
+          <button class="shb" onclick="selSh('スマッシュ',this)">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>スマッシュ
+          </button>
+          <button class="shb" onclick="selSh('ドロップ',this)">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>ドロップ
+          </button>
+        </div>
+      </div>
+      <div class="col-court" id="col-court">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+          <div class="clb" style="margin-bottom:0;display:flex;align-items:center;gap:6px;">
+            ③ コート
+            <span id="step-dots-ui" style="display:flex;gap:4px;align-items:center;"></span>
+          </div>
+          <button id="court-reset" onclick="resetCourt()" style="background:none;border:.5px solid var(--bd);color:var(--tx3);font-size:10px;padding:3px 7px;border-radius:6px;cursor:pointer;display:flex;align-items:center;gap:3px;">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg>
+            ↺
+          </button>
+        </div>
+        <div class="csvw"><svg id="csv" viewBox="-50 -60 310 410" xmlns="http://www.w3.org/2000/svg"></svg></div>
+      </div>
+    </div>
+    <div class="undo-row">
+      <button class="undo-btn" onclick="undoPt()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>
+        1ポイント戻る
+      </button>
+      <button class="undo-btn" onclick="showDlg('dlg-game')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>
+        1ゲーム戻る
+      </button>
+    </div>
+    <button class="cfb" id="cfb" disabled onclick="doConfirm()">ポイント確定</button>
+  </div>
+</div>
+
+<!-- HISTORY -->
+<div class="scr" id="sh">
+  <div class="shdr">
+    <button class="bbtn" onclick="goM()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
+    <div class="stit">履歴</div>
+  </div>
+  <div class="sbody" id="hl"></div>
+</div>
+
+<!-- STATS -->
+<div class="scr" id="ss">
+  <div class="shdr">
+    <button class="bbtn" onclick="goM()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
+    <div class="stit">統計</div>
+  </div>
+  <div class="stbody" id="stbd"></div>
+</div>
+
+<script>
+const PT=['0','15','30','40','A'];
+let S={p1:0,p2:0,g1:0,g2:0,win:null,shot:null,taps:[],log:[],step:0};
+
+// ── Geometry ──
+const AL=10,SL=38,SR=182,AR=210,HM=(SL+SR)/2,S3=(SR-SL)/3;
+const B1=SL,B2=SL+S3,B3=SL+S3*2;
+const NET_TOP=132,NET_BTM=148,NET_MID=140;
+const OM=24,OT=18;
+const GRASS='#3a8840';
+const SERVE_H=26;
+const SERVE_TOP='SERVE_TOP', SERVE_BTM='SERVE_BTM';
+
+// ── Shot rules ──
+function courtLocked(){return S.shot==='DF'||!S.shot;}
+function isServe(){return S.shot==='サービスエース';}
+
+function zoneHalf(id){
+  if(['O_SL','O_SR','O_BL','O_BC','O_BR','O_ALF','O_ALB','O_ARF','O_ARB',
+      'OUT_TOP','OUT_LEFT_T','OUT_RIGHT_T',SERVE_TOP].includes(id)) return 'top';
+  if(['M_SL','M_SR','M_BL','M_BC','M_BR','M_ALF','M_ALB','M_ARF','M_ARB',
+      'OUT_BTM','OUT_LEFT_B','OUT_RIGHT_B',SERVE_BTM].includes(id)) return 'btm';
+  return 'mid';
+}
+function isOut(id){return id.startsWith('OUT_')||id==='NET';}
+function isServeZone(id){return id===SERVE_TOP||id===SERVE_BTM;}
+function isSBZone(id){return['O_SL','O_SR','M_SL','M_SR'].includes(id);}
+function isIn(id){return!isOut(id)&&!isServeZone(id);}
+
+function winnerHalf(){
+  if(!S.taps.length) return null;
+  return zoneHalf(S.taps[0].zone);
+}
+function isTerminal(){
+  // Terminal means last tap was out/net AND we've reached the point end
+  if(!S.taps.length) return false;
+  const last = S.taps[S.taps.length-1].zone;
+  return isOut(last);
+}
+
+// ── canTap: given current state, is zone tappable? ──
+function canTap(id){
+  if(courtLocked()) return false;
+  const n = S.taps.length;
+  if(isTerminal()) return false;
+  if(n >= 3) return false;
+
+  if(isServe()){
+    if(n === 0){
+      return isServeZone(id); // 1st: serve zone only
+    }
+    if(n === 1){
+      // 2nd: SB of opponent's side (not out, serve is an ace or in)
+      const wh = zoneHalf(S.taps[0].zone); // server's side
+      const lh = wh==='top'?'btm':'top';    // receiver's side
+      if(lh==='top') return id==='O_SL'||id==='O_SR';
+      else           return id==='M_SL'||id==='M_SR';
+    }
+    if(n === 2){
+      // 3rd: out/net only (2nd was always in-court SB)
+      return isOut(id);
+    }
+    return false;
+  }
+
+  // ── Non-serve ──
+  if(n === 0){
+    return isIn(id);
+  }
+  if(n === 1){
+    const wh = zoneHalf(S.taps[0].zone);
+    const lh = wh==='top'?'btm':'top';
+    const zh = zoneHalf(id);
+    // サービスエース・DF以外: 2タップ目はコート内のみ（アウト・ネット不可）
+    const noOut = S.shot !== 'サービスエース' && S.shot !== 'DF';
+    if(noOut && isOut(id)) return false;
+    return zh===lh||zh==='mid';
+  }
+  if(n === 2){
+    if(isOut(S.taps[1].zone)) return false;
+    return isOut(id);
+  }
+  return false;
+}
+
+// ── Colors ──
+// winColor = winner's player color
+// loseColor = loser's player color
+function winColor(){ return S.win==='p1'?'rgba(74,222,128,.62)':'rgba(167,139,250,.62)';}
+function loseColor(){ return S.win==='p1'?'rgba(167,139,250,.62)':'rgba(74,222,128,.62)';}
+function winColorSolid(){ return S.win==='p1'?'#4ade80':'#a78bfa';}
+function loseColorSolid(){ return S.win==='p1'?'#a78bfa':'#4ade80';}
+
+// tapFill: color overlay for a tapped zone at given slot index
+function tapFill(idx){
+  const z = S.taps[idx]?.zone;
+  if(!z) return 'rgba(255,255,255,.25)';
+  if(idx === 0) return winColor();   // 1st tap always winner color
+  if(isOut(z)){
+    // terminal (Point!!) → winner color (they won the point)
+    return winColor();
+  }
+  // 2nd tap in-court (rally continues) → loser color (opponent's shot)
+  return loseColor();
+}
+function tapLabel(idx){
+  const z = S.taps[idx]?.zone;
+  if(idx === 0) return isServeZone(z)?'サーブ':'1';
+  if(z && isOut(z)) return 'Point!!';
+  return idx===1?'2':'Point!!';
+}
+function tapFs(idx){
+  const lbl = tapLabel(idx);
+  if(lbl==='Point!!') return '6';
+  if(lbl==='サーブ')  return '6.5';
+  return '8';
+}
+
+// ── "How many taps needed" prompt ──
+// Returns string describing next expected action
+function nextTapHint(){
+  if(courtLocked()) return null;
+  const n = S.taps.length;
+  if(isServe()){
+    if(n===0) return '① サーブした方のコート外をタップ';
+    if(n===1) return '② 入ったサービスボックスをタップ';
+    if(n===2 && !isTerminal()) return '③ 結果（アウト/ネット）をタップ、またはスキップ';
+    return null;
+  }
+  if(n===0) return '① 打った場所をタップ';
+  if(n===1 && !isTerminal()) return '② 決まった場所をタップ';
+  if(n===2 && !isTerminal()) return '③ アウト/ネットをタップ、またはスキップ';
+  return null;
+}
+
+// ── Zone defs ──
+const ZN_LABEL={
+  O_SL:'コートA-SB左',O_SR:'コートA-SB右',O_BL:'コートA-後左',O_BC:'コートA-後中',O_BR:'コートA-後右',
+  O_ALF:'コートA-ア前L',O_ALB:'コートA-ア後L',O_ARF:'コートA-ア前R',O_ARB:'コートA-ア後R',
+  M_SL:'コートB-SB左',M_SR:'コートB-SB右',M_BL:'コートB-後左',M_BC:'コートB-後中',M_BR:'コートB-後右',
+  M_ALF:'コートB-ア前L',M_ALB:'コートB-ア後L',M_ARF:'コートB-ア前R',M_ARB:'コートB-ア後R',
+  OUT_TOP:'BLオーバー(上)',OUT_BTM:'BLオーバー(下)',
+  OUT_LEFT_T:'サイドオーバー左(上)',OUT_LEFT_B:'サイドオーバー左(下)',
+  OUT_RIGHT_T:'サイドオーバー右(上)',OUT_RIGHT_B:'サイドオーバー右(下)',
+  NET:'ネット', SERVE_TOP:'サーブ(上)', SERVE_BTM:'サーブ(下)'
+};
+
+function mzIn(){
+  const z=[];const a=(id,x,y,w,h)=>z.push({id,x,y,w,h});
+  const OB=6,OS=83,ON=NET_TOP;
+  a('O_SL',SL,OS,HM-SL,ON-OS);a('O_SR',HM,OS,SR-HM,ON-OS);
+  a('O_BL',B1,OB,S3,OS-OB);a('O_BC',B2,OB,S3,OS-OB);a('O_BR',B3,OB,S3,OS-OB);
+  a('O_ALF',AL,OS,SL-AL,ON-OS);a('O_ALB',AL,OB,SL-AL,OS-OB);
+  a('O_ARF',SR,OS,AR-SR,ON-OS);a('O_ARB',SR,OB,AR-SR,OS-OB);
+  const MN=NET_BTM,MS=197,MB=274;
+  a('M_SL',SL,MN,HM-SL,MS-MN);a('M_SR',HM,MN,SR-HM,MS-MN);
+  a('M_BL',B1,MS,S3,MB-MS);a('M_BC',B2,MS,S3,MB-MS);a('M_BR',B3,MS,S3,MB-MS);
+  a('M_ALF',AL,MN,SL-AL,MS-MN);a('M_ALB',AL,MS,SL-AL,MB-MS);
+  a('M_ARF',SR,MN,AR-SR,MS-MN);a('M_ARB',SR,MS,AR-SR,MB-MS);
+  return z;
+}
+function mzOut(){
+  return[
+    {id:'OUT_TOP',    x:AL-OM,y:6-OT,      w:(AR-AL)+OM*2,h:OT},
+    {id:'OUT_BTM',    x:AL-OM,y:274,        w:(AR-AL)+OM*2,h:OT},
+    {id:'OUT_LEFT_T', x:AL-OM,y:6,          w:OM,h:NET_MID-6},
+    {id:'OUT_LEFT_B', x:AL-OM,y:NET_MID,    w:OM,h:274-NET_MID},
+    {id:'OUT_RIGHT_T',x:AR,   y:6,          w:OM,h:NET_MID-6},
+    {id:'OUT_RIGHT_B',x:AR,   y:NET_MID,    w:OM,h:274-NET_MID},
+  ];
+}
+function mzServe(){
+  // Serve zones sit OUTSIDE the out-of-court strip (beyond OT boundary)
+  const sw=(AR-AL)*0.62, sh=SERVE_H+2, cx=(AL+AR)/2;
+  const SM=10; // gap between OT edge and serve zone
+  return[
+    {id:SERVE_TOP, x:cx-sw/2, y:6-OT-SM-sh,  w:sw, h:sh}, // above top baseline-out zone
+    {id:SERVE_BTM, x:cx-sw/2, y:274+OT+SM,    w:sw, h:sh}, // below bottom baseline-out zone
+  ];
+}
+const AZ_IN=mzIn();
+const AZ_OUT=mzOut();
+
+// ── Draw SVG ──
+function bcsv(){
+  const svg=document.getElementById('csv');
+  svg.innerHTML='';
+  const ns='http://www.w3.org/2000/svg';
+  const el=(t,a,txt)=>{const e=document.createElementNS(ns,t);Object.entries(a).forEach(([k,v])=>e.setAttribute(k,v));if(txt!==undefined)e.textContent=txt;return e;};
+
+  const locked=courtLocked();
+  const terminal=isTerminal();
+  const tCount=S.taps.length;
+  const serve=isServe();
+
+  // backgrounds
+  const SM2=10,SH2=SERVE_H+2;
+  svg.appendChild(el('rect',{x:AL-OM-2,y:6-OT-SM2-SH2-4,width:(AR-AL)+OM*2+4,height:268+OT*2+SM2*2+SH2*2+8,fill:'#101a11',rx:'3'}));
+  svg.appendChild(el('rect',{x:AL,y:6,width:AR-AL,height:268,fill:GRASS}));
+
+  // Prompt step indicators (tiny numbered circles in margin)
+  if(!locked){
+    const hint=nextTapHint();
+    if(hint){
+      // draw small step badges top-right of SVG area
+      const stepN=tCount+1;
+      const badgeX=(AL+AR)/2;
+      const badgeY=6-OT+OT/2;
+      // tiny pulsing ring around next expected zone category
+      // draw a subtle label instead
+    }
+  }
+
+  // ── In-court zones ──
+  AZ_IN.forEach(z=>{
+    const tapIdx=S.taps.findIndex(t=>t.zone===z.id);
+    const tapped=tapIdx>=0;
+    const allowed=!locked&&!terminal&&canTap(z.id)&&!tapped;
+    const g=document.createElementNS(ns,'g');
+    if(!locked) g.addEventListener('click',()=>tapZ(z.id));
+
+    // highlight allowed zones with subtle glow border
+    const stroke = allowed ? 'rgba(255,255,255,.45)' : 'rgba(255,255,255,.18)';
+    const strokeW = allowed ? '1' : '.6';
+    const op = (!tapped && !allowed) ? '0.3' : '1';
+    g.appendChild(el('rect',{x:z.x,y:z.y,width:z.w,height:z.h,
+      fill: tapped ? tapFill(tapIdx) : allowed ? 'rgba(255,255,255,.06)' : 'transparent',
+      stroke, 'stroke-width':strokeW, opacity:op}));
+
+    if(tapped){
+      const m=el('text',{x:z.x+z.w/2,y:z.y+z.h/2});
+      m.setAttribute('style',`font-size:${tapFs(tapIdx)}px;fill:#fff;font-weight:700;text-anchor:middle;dominant-baseline:middle;pointer-events:none;`);
+      m.textContent=tapLabel(tapIdx); g.appendChild(m);
+    } else if(allowed && tCount < 3){
+      // show step number hint in allowed zones
+      const stepN = tCount+1;
+      const m=el('text',{x:z.x+z.w/2,y:z.y+z.h/2});
+      m.setAttribute('style','font-size:7px;fill:rgba(255,255,255,.3);font-weight:600;text-anchor:middle;dominant-baseline:middle;pointer-events:none;');
+      m.textContent=stepN; g.appendChild(m);
+    }
+    svg.appendChild(g);
+  });
+
+  // ── Out zones ──
+  AZ_OUT.forEach(z=>{
+    const tapIdx=S.taps.findIndex(t=>t.zone===z.id);
+    const tapped=tapIdx>=0;
+    const allowed=!locked&&!terminal&&canTap(z.id)&&!tapped;
+    const g=document.createElementNS(ns,'g');
+    if(!locked) g.addEventListener('click',()=>tapZ(z.id));
+    const op=(!tapped&&!allowed&&tCount>0)?'0.18':'1';
+    const fill = tapped ? tapFill(tapIdx) : allowed ? 'rgba(255,255,255,.08)' : 'rgba(255,255,255,.03)';
+    const stroke = allowed ? 'rgba(255,255,255,.5)' : 'rgba(255,255,255,.12)';
+    g.appendChild(el('rect',{x:z.x,y:z.y,width:z.w,height:z.h,
+      fill, stroke, 'stroke-width':'.6', rx:'1', opacity:op}));
+    if(tapped){
+      const m=el('text',{x:z.x+z.w/2,y:z.y+z.h/2});
+      m.setAttribute('style',`font-size:${tapFs(tapIdx)}px;fill:#fff;font-weight:700;text-anchor:middle;dominant-baseline:middle;pointer-events:none;`);
+      m.textContent=tapLabel(tapIdx); g.appendChild(m);
+    } else if(allowed){
+      const stepN=tCount+1;
+      const m=el('text',{x:z.x+z.w/2,y:z.y+z.h/2});
+      m.setAttribute('style','font-size:6.5px;fill:rgba(255,255,255,.35);font-weight:600;text-anchor:middle;dominant-baseline:middle;pointer-events:none;');
+      m.textContent=stepN; g.appendChild(m);
+    }
+    svg.appendChild(g);
+  });
+
+  // ── White court lines (drawn after zones so they're on top) ──
+  const lnw=(x1,y1,x2,y2)=>svg.appendChild(el('line',{x1,y1,x2,y2,stroke:'rgba(255,255,255,.85)','stroke-width':'1'}));
+  lnw(AL,6,AR,6);lnw(AL,274,AR,274);lnw(AL,6,AL,274);lnw(AR,6,AR,274);
+  lnw(SL,6,SL,274);lnw(SR,6,SR,274);
+  lnw(SL,83,SR,83);lnw(SL,197,SR,197);
+  lnw(HM,83,HM,NET_TOP);lnw(HM,NET_BTM,HM,197);
+
+  // ── Net zone ──
+  const ntIdx=S.taps.findIndex(t=>t.zone==='NET');
+  const ntTapped=ntIdx>=0;
+  const ntAllowed=!locked&&!terminal&&canTap('NET')&&!ntTapped;
+  const ntOp=(!ntTapped&&!ntAllowed&&tCount>0)?'0.18':'1';
+  const ng=document.createElementNS(ns,'g');
+  if(!locked) ng.addEventListener('click',()=>tapZ('NET'));
+  ng.appendChild(el('rect',{x:AL,y:NET_TOP,width:AR-AL,height:NET_BTM-NET_TOP,
+    fill:ntTapped?tapFill(ntIdx):ntAllowed?'rgba(212,192,122,.15)':'rgba(0,0,0,.35)',
+    opacity:ntOp}));
+  if(ntAllowed&&!ntTapped){
+    const m=el('text',{x:(AL+AR)/2,y:NET_MID});
+    m.setAttribute('style','font-size:6.5px;fill:rgba(212,192,122,.5);font-weight:600;text-anchor:middle;dominant-baseline:middle;pointer-events:none;');
+    m.textContent=tCount+1; ng.appendChild(m);
+  }
+  svg.appendChild(ng);
+  svg.appendChild(el('line',{x1:AL,y1:NET_MID,x2:AR,y2:NET_MID,stroke:'#d4c07a','stroke-width':'2.5','stroke-dasharray':'3,2'}));
+  const ntxt=el('text',{x:(AL+AR)/2,y:NET_MID});
+  ntxt.setAttribute('style','font-size:6px;fill:rgba(212,192,122,.85);text-anchor:middle;dominant-baseline:middle;pointer-events:none;font-weight:700;');
+  ntxt.textContent='NET'; svg.appendChild(ntxt);
+  if(ntTapped){
+    const m=el('text',{x:(AL+AR)/2,y:NET_MID+7});
+    m.setAttribute('style','font-size:6px;fill:#fff;font-weight:700;text-anchor:middle;dominant-baseline:middle;pointer-events:none;');
+    m.textContent=tapLabel(ntIdx); svg.appendChild(m);
+  }
+
+  // ── Serve zones ──
+  if(serve){
+    const servZones=mzServe();
+    servZones.forEach(z=>{
+      const tapIdx=S.taps.findIndex(t=>t.zone===z.id);
+      const tapped=tapIdx>=0;
+      const allowed=!terminal&&canTap(z.id)&&!tapped;
+      const g=document.createElementNS(ns,'g');
+      g.addEventListener('click',()=>tapZ(z.id));
+      const fill = tapped ? winColor() : allowed ? 'rgba(200,230,200,.1)' : 'rgba(255,255,255,.03)';
+      const stroke = tapped ? winColorSolid() : allowed ? 'rgba(200,230,200,.4)' : 'rgba(255,255,255,.1)';
+      const op = (!tapped&&!allowed&&tCount>0)?'0.18':'1';
+      g.appendChild(el('rect',{x:z.x,y:z.y,width:z.w,height:z.h,
+        fill, stroke, 'stroke-width':'.8', rx:'4', opacity:op}));
+      const lbl = tapped ? tapLabel(tapIdx) : 'サーブ';
+      const fs  = tapped ? tapFs(tapIdx) : '6.5';
+      const fc  = tapped ? '#fff' : allowed ? 'rgba(200,230,200,.6)' : 'rgba(255,255,255,.2)';
+      const m=el('text',{x:z.x+z.w/2,y:z.y+z.h/2});
+      m.setAttribute('style',`font-size:${fs}px;fill:${fc};font-weight:700;text-anchor:middle;dominant-baseline:middle;pointer-events:none;letter-spacing:.05em;`);
+      m.textContent=lbl; g.appendChild(m);
+      if(allowed){
+        const sn=el('text',{x:z.x+z.w-6,y:z.y+5});
+        sn.setAttribute('style','font-size:6px;fill:rgba(200,230,200,.45);font-weight:700;text-anchor:middle;dominant-baseline:middle;pointer-events:none;');
+        sn.textContent='①'; g.appendChild(sn);
+      }
+      svg.appendChild(g);
+    });
+  }
+
+  // step dots rendered in HTML, not SVG
+
+  // ── Dynamic side labels ──
+  const wh=winnerHalf();
+  const lx=AL-OM-12; // outside the out-of-court zone
+  if(S.taps.length>0&&wh&&wh!=='mid'){
+    const topLbl=wh==='top'?(S.win==='p1'?'あなた':'相手'):(S.win==='p1'?'相手':'あなた');
+    const btmLbl=wh==='btm'?(S.win==='p1'?'あなた':'相手'):(S.win==='p1'?'相手':'あなた');
+    svg.appendChild(el('text',{x:lx,y:72,class:'cslb',transform:`rotate(-90,${lx},72)`},topLbl));
+    svg.appendChild(el('text',{x:lx,y:208,class:'cslb',transform:`rotate(-90,${lx},208)`},btmLbl));
+  }
+
+  // update hint text below court
+  updateStepDots();
+  updateHint();
+}
+
+function updateStepDots(){
+  const wrap = document.getElementById('step-dots-ui');
+  if(!wrap) return;
+  if(courtLocked()){wrap.innerHTML='';return;}
+  const tCount = S.taps.length;
+  const terminal = isTerminal();
+  let html = '';
+  for(let i=0;i<3;i++){
+    const done = i < tCount;
+    const active = i === tCount && !terminal;
+    let bg, border;
+    if(done){
+      if(i===0) bg = winColorSolid();
+      else if(i===1) bg = loseColorSolid();
+      else bg = winColorSolid(); // Point!! = winner color
+      border = 'none';
+    } else if(active){
+      bg = 'rgba(255,255,255,.15)';
+      border = '1px solid rgba(255,255,255,.45)';
+    } else {
+      bg = 'rgba(255,255,255,.07)';
+      border = 'none';
+    }
+    html += `<span style="display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;background:${bg};border:${border};font-size:8px;font-weight:700;color:rgba(255,255,255,${done?'.9':active?'.6':'.25'});">${i+1}</span>`;
+  }
+  wrap.innerHTML = html;
+}
+
+function updateHint(){
+  let h = document.getElementById('court-hint-txt');
+  if(!h) return;
+  const hint = nextTapHint();
+  h.textContent = hint || '';
+}
+
+// ── Tap handler with reverse-deselect (3→2→1 order) ──
+function tapZ(id){
+  if(courtLocked()) return;
+  if(isTerminal()) return;
+  const ei = S.taps.findIndex(t=>t.zone===id);
+  if(ei >= 0){
+    // Deselect: remove this tap AND all taps after it
+    S.taps.splice(ei);
+    bcsv(); return;
+  }
+  if(!canTap(id)) return;
+  S.taps.push({zone:id});
+  bcsv();
+}
+
+function resetCourt(){
+  S.taps=[];
+  bcsv();
+}
+
+// ── Court data validity ──
+// For non-serve: valid if 3 taps OR last tap is terminal (out/net)
+// For serve: valid only if all 3 taps present (serve zone + SB + out/net)
+function courtValid(){
+  if(!S.taps.length) return false; // no taps → not saved
+  if(isServe()) return S.taps.length===3;
+  // non-serve: valid if terminal (2 or 3 taps ending in out/net) or all 3 taps
+  return isTerminal() || S.taps.length===3;
+}
+
+function buildCourtStr(){
+  if(!courtValid()) return '';
+  return S.taps.map((t,i)=>{
+    const z=t.zone;
+    let lbl;
+    if(i===0) lbl=isServeZone(z)?'サーブ':'1';
+    else lbl=isOut(z)?'Point!!':'2';
+    return lbl+':'+ZN_LABEL[z];
+  }).join(' → ');
+}
+
+// ── UI handlers ──
+function selW(p){
+  S.win=p; S.step=1; S.taps=[];
+  document.getElementById('bp1').className='wb wa'+(p==='p1'?' sl':'');
+  document.getElementById('bp2').className='wb wb2'+(p==='p2'?' sl':'');
+  const c=document.getElementById('card23'); c.style.opacity='1'; c.style.pointerEvents='auto';
+  updateCourtLock(); bcsv(); uSeg(); chk();
+}
+function selSh(s,btn){
+  if(S.shot===s){
+    S.shot=null; S.taps=[];
+    document.querySelectorAll('#sbtns .shb').forEach(b=>b.classList.remove('sl'));
+    updateCourtLock(); bcsv(); uSeg(); chk(); return;
+  }
+  S.shot=s; S.taps=[]; S.step=Math.max(S.step,2);
+  document.querySelectorAll('#sbtns .shb').forEach(b=>b.classList.remove('sl'));
+  btn.classList.add('sl');
+  updateCourtLock(); bcsv(); uSeg(); chk();
+}
+function updateCourtLock(){
+  const cc=document.getElementById('col-court');
+  if(courtLocked()){cc.style.opacity='.38'; cc.style.pointerEvents='none';}
+  else{cc.style.opacity='1'; cc.style.pointerEvents='auto';}
+}
+function uSeg(){for(let i=0;i<3;i++){const s=document.getElementById('sg'+i);s.className='seg'+(i<S.step?' dn':i===S.step?' ac2':'');}}
+function chk(){
+  const b=document.getElementById('cfb');
+  if(S.win){b.disabled=false;b.className='cfb p'+(S.win==='p1'?'a':'b');b.textContent=(S.win==='p1'?'あなた':'相手')+'のポイント ✓';}
+  else{b.disabled=true;b.className='cfb';b.textContent='ポイント確定';}
+}
+function gps(p){
+  if(S.p1>=3&&S.p2>=3)return S.p1>S.p2?(p==='p1'?'AD':'40'):S.p2>S.p1?(p==='p2'?'AD':'40'):'40';
+  return PT[Math.min(p==='p1'?S.p1:S.p2,4)];
+}
+function sstr(){return gps('p1')+'-'+gps('p2');}
+
+function doConfirm(){
+  const prev=sstr();
+  if(S.win==='p1') S.p1++; else S.p2++;
+  let gw=false;
+  if(S.p1>=4&&S.p2>=4){if(Math.abs(S.p1-S.p2)>=2){if(S.p1>S.p2)S.g1++;else S.g2++;S.p1=0;S.p2=0;gw=true;}}
+  else if(S.p1>=4){S.g1++;S.p1=0;S.p2=0;gw=true;}
+  else if(S.p2>=4){S.g2++;S.p1=0;S.p2=0;gw=true;}
+  const cs = courtValid() ? buildCourtStr() : '';
+  S.log.unshift({n:S.log.length+1,score:prev,win:S.win,shot:S.shot,court:cs,game:gw});
+  uSc(); rpt();
+}
+function uSc(){
+  document.getElementById('p1v').textContent=gps('p1');
+  document.getElementById('p2v').textContent=gps('p2');
+  document.getElementById('p1g').textContent=S.g1+' G';
+  document.getElementById('p2g').textContent=S.g2+' G';
+}
+function rpt(){
+  S.win=null;S.shot=null;S.taps=[];S.step=0;
+  document.getElementById('bp1').className='wb wa';
+  document.getElementById('bp2').className='wb wb2';
+  document.querySelectorAll('#sbtns .shb').forEach(b=>b.classList.remove('sl'));
+  const c=document.getElementById('card23'); c.style.opacity='.35'; c.style.pointerEvents='none';
+  document.getElementById('cfb').disabled=true;
+  document.getElementById('cfb').className='cfb';
+  document.getElementById('cfb').textContent='ポイント確定';
+  updateCourtLock(); uSeg(); document.getElementById('mb').scrollTop=0; bcsv();
+}
+function undoPt(){
+  if(!S.log.length) return;
+  const last=S.log.shift();
+  if(last.game){
+    if(last.win==='p1'){if(S.g1>0)S.g1--;}else{if(S.g2>0)S.g2--;}
+    S.p1=0; S.p2=0;
+    const pts=last.score.split('-');
+    const map={'0':0,'15':1,'30':2,'40':3,'AD':4};
+    S.p1=map[pts[0]]||0; S.p2=map[pts[1]]||0;
+  } else {
+    const pts=last.score.split('-');
+    const map={'0':0,'15':1,'30':2,'40':3,'AD':4};
+    S.p1=map[pts[0]]||0; S.p2=map[pts[1]]||0;
+  }
+  S.log.forEach((l,i)=>l.n=S.log.length-i);
+  uSc(); rpt();
+}
+function doUndoGame(){
+  // If current points are 0-0, remove the last completed game too
+  const pointsInProgress = S.p1 > 0 || S.p2 > 0;
+
+  if(pointsInProgress){
+    // Just clear the in-progress points of this game (no game count change)
+    while(S.log.length>0&&!S.log[0].game){S.log.shift();}
+    S.p1=0; S.p2=0;
+  } else {
+    // Points already 0-0: remove the last completed game from log + decrement game count
+    while(S.log.length>0&&!S.log[0].game){S.log.shift();}
+    if(S.log.length>0&&S.log[0].game){
+      const g=S.log.shift();
+      if(g.win==='p1'){if(S.g1>0)S.g1--;}else{if(S.g2>0)S.g2--;}
+    }
+    S.p1=0; S.p2=0;
+  }
+
+  S.log.forEach((l,i)=>l.n=S.log.length-i);
+  uSc(); rpt(); closeDlg('dlg-game');
+}
+function showDlg(id){document.getElementById(id).classList.add('show');}
+function closeDlg(id){document.getElementById(id).classList.remove('show');}
+function doReset(){S={p1:0,p2:0,g1:0,g2:0,win:null,shot:null,taps:[],log:[],step:0};uSc();rpt();closeDlg('dlg-reset');}
+function goM(){document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));document.getElementById('sm').classList.add('on');}
+function goH(){rH();document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));document.getElementById('sh').classList.add('on');}
+function goSt(){rSt();document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));document.getElementById('ss').classList.add('on');}
+
+function rH(){
+  const el=document.getElementById('hl');
+  if(!S.log.length){el.innerHTML='<div class="empty">まだ記録がありません</div>';return;}
+  el.innerHTML=S.log.map(r=>`<div class="li"><span class="lnum">${r.n}</span><div class="lbd"><div class="ltop"><span class="lsc">${r.score}</span><span class="tag p${r.win==='p1'?'a':'b'}">${r.win==='p1'?'あなた':'相手'}</span>${r.game?'<span class="tag gm">ゲーム</span>':''}</div>${r.shot?`<div class="lsh">${r.shot}</div>`:''}${r.court?`<div class="lco">${r.court}</div>`:''}</div></div>`).join('');
+}
+function mkPie(data,sz){
+  const tot=data.reduce((a,d)=>a+d.val,0);
+  if(!tot)return`<svg viewBox="0 0 ${sz} ${sz}" width="${sz}" height="${sz}"><circle cx="${sz/2}" cy="${sz/2}" r="${sz/2-2}" fill="rgba(255,255,255,.06)"/></svg>`;
+  const r=sz/2-2,cx=sz/2,cy=sz/2;let s=`<svg viewBox="0 0 ${sz} ${sz}" width="${sz}" height="${sz}">`;
+  const active=data.filter(d=>d.val>0);
+  if(active.length===1){return s+`<circle cx="${cx}" cy="${cy}" r="${r}" fill="${active[0].color}"/></svg>`;}
+  let ang=-Math.PI/2;
+  data.forEach(d=>{
+    if(!d.val)return;const a=2*Math.PI*d.val/tot;
+    const x1=cx+r*Math.cos(ang),y1=cy+r*Math.sin(ang);ang+=a;
+    const x2=cx+r*Math.cos(ang),y2=cy+r*Math.sin(ang);
+    s+=`<path d="M${cx},${cy} L${x1.toFixed(1)},${y1.toFixed(1)} A${r},${r} 0 ${a>Math.PI?1:0} 1 ${x2.toFixed(1)},${y2.toFixed(1)} Z" fill="${d.color}"/>`;
+  });
+  return s+`</svg>`;
+}
+function mkLeg(data,tot){
+  return data.filter(d=>d.val>0).map(d=>`<div class="pie-leg-row"><div class="pie-leg-dot" style="background:${d.color}"></div>${d.label}<span class="pie-leg-val">${d.val}(${Math.round(d.val/(tot||1)*100)}%)</span></div>`).join('');
+}
+function rSt(){
+  const el=document.getElementById('stbd');
+  if(!S.log.length){el.innerHTML='<div class="empty">まだ記録がありません</div>';return;}
+  const tot=S.log.length,p1w=S.log.filter(l=>l.win==='p1').length,p2w=tot-p1w;
+  const SH=['サービスエース','DF','ストローク','ボレー','スマッシュ','ドロップ'];
+  const SC=['#4ade80','#f87171','#a78bfa','#fbbf24','#60a5fa','#fb923c'];
+  const scA={},scB={};SH.forEach(s=>{scA[s]=0;scB[s]=0;});
+  S.log.forEach(l=>{if(!l.shot)return;if(l.win==='p1')scA[l.shot]=(scA[l.shot]||0)+1;else scB[l.shot]=(scB[l.shot]||0)+1;});
+  const sc={};SH.forEach(s=>sc[s]=(scA[s]||0)+(scB[s]||0));
+  const mx=Math.max(...Object.values(sc),1);
+  function catLast(court){
+    if(!court)return null;
+    const parts=court.split(' → '),last=parts[parts.length-1];
+    if(last.includes('BL'))return'BLオーバー';
+    if(last.includes('サイドオーバー'))return'サイドオーバー';
+    if(last.includes('ネット'))return'ネット';
+    return'イン';
+  }
+  const oA={イン:0,BLオーバー:0,サイドオーバー:0,ネット:0};
+  const oB={イン:0,BLオーバー:0,サイドオーバー:0,ネット:0};
+  S.log.forEach(l=>{if(!l.court)return;const c=catLast(l.court);if(l.win==='p1')oA[c]++;else oB[c]++;});
+  const totA=Object.values(oA).reduce((a,b)=>a+b,0);
+  const totB=Object.values(oB).reduce((a,b)=>a+b,0);
+  const outC={イン:'#4ade80',BLオーバー:'#f87171',サイドオーバー:'#fbbf24',ネット:'#60a5fa'};
+  const wz={};
+  S.log.forEach(l=>{
+    if(!l.court)return;
+    const parts=l.court.split(' → '),last=parts[parts.length-1];
+    if(last.startsWith('Point!!')||last.startsWith('2:')){
+      const zn=last.replace(/^[^:]+:/,'');
+      const zi=Object.entries(ZN_LABEL).find(([,v])=>v===zn)?.[0];
+      if(zi&&!isOut(zi)&&!isServeZone(zi))wz[zi]=(wz[zi]||0)+1;
+    }
+  });
+  const mxz=Math.max(...Object.values(wz),1);
+  el.innerHTML=`
+  <button class="print-btn" onclick="window.print()">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+    印刷 / PDF
+  </button>
+  <div class="ss"><div class="stit2">ゲームスコア</div>
+    <div class="game-cards">
+      <div class="game-card"><div class="game-card-lbl"><span class="dot a"></span>あなた</div><div class="game-val ac">${S.g1}<span style="font-size:13px;font-weight:400;color:var(--tx3)"> G</span></div></div>
+      <div class="game-card"><div class="game-card-lbl"><span class="dot b"></span>相手</div><div class="game-val bc">${S.g2}<span style="font-size:13px;font-weight:400;color:var(--tx3)"> G</span></div></div>
+    </div>
+  </div>
+  <div class="ss"><div class="stit2">ポイント</div>
+    <div class="scds">
+      <div class="scd"><div class="sv ac">${p1w}</div><div class="slb">あなた (${Math.round(p1w/tot*100)}%)</div></div>
+      <div class="scd"><div class="sv bc">${p2w}</div><div class="slb">相手 (${Math.round(p2w/tot*100)}%)</div></div>
+    </div>
+    <div class="wrw"><div class="wrow"><div class="wp1" style="flex:${p1w}"></div><div class="wp2" style="flex:${p2w||.01}"></div></div>
+    <div class="wlbs"><span class="wlb ac">あなた ${p1w}pt</span><span class="wlb bc">相手 ${p2w}pt</span></div></div>
+  </div>
+  <div class="ss"><div class="stit2">ショット別（あなた vs 相手）</div>
+    <div class="pie-row">
+      <div class="pie-card"><div class="pie-title" style="color:var(--p1)">あなた</div>${mkPie(SH.map((s,i)=>({label:s,val:scA[s],color:SC[i]})),72)}<div class="pie-legend">${mkLeg(SH.map((s,i)=>({label:s,val:scA[s],color:SC[i]})),p1w)}</div></div>
+      <div class="pie-card"><div class="pie-title" style="color:var(--p2)">相手</div>${mkPie(SH.map((s,i)=>({label:s,val:scB[s],color:SC[i]})),72)}<div class="pie-legend">${mkLeg(SH.map((s,i)=>({label:s,val:scB[s],color:SC[i]})),p2w)}</div></div>
+    </div>
+  </div>
+  <div class="ss"><div class="stit2">ショット別（棒グラフ）</div>
+    ${SH.map((s,i)=>`<div class="brr"><div class="brl">${s}</div><div class="brt"><div class="brf" style="width:${Math.round(sc[s]/mx*100)}%;background:${SC[i]}"></div></div><div class="brc">${sc[s]}</div></div>`).join('')}
+  </div>
+  <div class="ss"><div class="stit2">得点の傾向</div>
+    <div class="pie-row">
+      <div class="pie-card"><div class="pie-title" style="color:var(--p1)">あなたの得点</div>${mkPie(Object.keys(oA).map(k=>({label:k,val:oA[k],color:outC[k]})),72)}<div class="pie-legend">${mkLeg(Object.keys(oA).map(k=>({label:k,val:oA[k],color:outC[k]})),totA)}</div></div>
+      <div class="pie-card"><div class="pie-title" style="color:var(--p2)">相手の得点</div>${mkPie(Object.keys(oB).map(k=>({label:k,val:oB[k],color:outC[k]})),72)}<div class="pie-legend">${mkLeg(Object.keys(oB).map(k=>({label:k,val:oB[k],color:outC[k]})),totB)}</div></div>
+    </div>
+  </div>
+  <div class="ss"><div class="stit2">決まった場所 ヒートマップ</div>
+    <div class="hwp"><div class="hwi">${bhsv(wz,mxz)}</div>
+    <div class="hwleg"><div class="hwlg"><div class="hwld" style="background:rgba(58,136,64,.4)"></div>少ない</div><div class="hwlg"><div class="hwld" style="background:rgba(251,191,36,.85)"></div>多い</div></div></div>
+  </div>`;
+}
+function bhsv(wz,mxz){
+  const z=mzIn();const ns='http://www.w3.org/2000/svg';
+  let s=`<svg viewBox="0 0 220 280" style="max-width:180px;width:100%;" xmlns="${ns}">`;
+  s+=`<rect x="${AL}" y="6" width="${AR-AL}" height="268" fill="${GRASS}"/>`;
+  z.forEach(z=>{
+    const cnt=wz[z.id]||0;
+    s+=`<rect x="${z.x}" y="${z.y}" width="${z.w}" height="${z.h}" fill="transparent" stroke="rgba(255,255,255,.2)" stroke-width=".6"/>`;
+    if(cnt>0){const a=(0.15+cnt/mxz*0.75).toFixed(2);s+=`<rect x="${z.x}" y="${z.y}" width="${z.w}" height="${z.h}" fill="rgba(251,191,36,${a})"/>`;}
+    if(cnt>0){const cx=z.x+z.w/2,cy=z.y+z.h/2;s+=`<text x="${cx}" y="${cy}" class="hct">${cnt}</text>`;}
+  });
+  const ln=(x1,y1,x2,y2)=>`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="rgba(255,255,255,.8)" stroke-width="1"/>`;
+  s+=ln(AL,6,AR,6)+ln(AL,274,AR,274)+ln(AL,6,AL,274)+ln(AR,6,AR,274);
+  s+=ln(SL,6,SL,274)+ln(SR,6,SR,274)+ln(SL,83,SR,83)+ln(SL,197,SR,197);
+  s+=ln(HM,83,HM,NET_TOP)+ln(HM,NET_BTM,HM,197);
+  s+=`<rect x="${AL}" y="${NET_TOP}" width="${AR-AL}" height="${NET_BTM-NET_TOP}" fill="rgba(0,0,0,.35)"/>`;
+  s+=`<line x1="${AL}" y1="${NET_MID}" x2="${AR}" y2="${NET_MID}" stroke="#d4c07a" stroke-width="2" stroke-dasharray="3,2"/>`;
+  return s+`</svg>`;
+}
+uSc();bcsv();
+</script>
+</body>
+</html>
