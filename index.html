@@ -58,21 +58,21 @@ body{font-family:'Helvetica Neue',Arial,sans-serif;
 .wb.wb2{border-color:var(--p2d);}
 .wb.wb2:hover,.wb.wb2.sl{background:var(--p2b);border-color:var(--p2);}
 .wb:active{transform:scale(.97);}
-.card23{background:var(--sf);border:.5px solid var(--bd);border-radius:12px;padding:8px 10px;flex-shrink:0;display:flex;gap:8px;align-items:flex-start;transition:opacity .2s;}
-.col-shot{display:flex;flex-direction:column;gap:4px;flex-shrink:0;width:112px;align-self:flex-start;}
-.shb{border:.5px solid var(--bd);border-radius:8px;padding:7px 6px 6px;background:transparent;color:var(--tx);font-size:11px;cursor:pointer;display:flex;flex-direction:row;align-items:center;gap:5px;width:100%;white-space:nowrap;transition:background .12s,border-color .12s;}
-.shb svg{flex-shrink:0;color:var(--tx2);}
+.card23{background:var(--sf);border:.5px solid var(--bd);border-radius:12px;padding:8px 10px;flex-shrink:0;display:flex;flex-direction:column;gap:6px;transition:opacity .2s;}
+.shot-grid23{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;}
+.shb{border:.5px solid var(--bd);border-radius:8px;padding:7px 4px 6px;background:transparent;color:var(--tx);font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;width:100%;text-align:center;transition:background .12s,border-color .12s;}
+.shb svg{color:var(--tx2);}
 .shb:hover{background:rgba(255,255,255,.04);}
 .shb.sl{background:rgba(200,212,78,.12);border-color:rgba(200,212,78,.5);color:var(--ball);}
 .shb.sl svg{color:var(--ball);}
 .shb:active{transform:scale(.97);}
-.col-court{flex:1;min-width:0;transition:opacity .2s;display:flex;flex-direction:column;}
-.csvw{display:flex;justify-content:center;align-items:flex-start;}
-.csvw svg{width:100%;max-width:190px;}
+.col-court{width:100%;transition:opacity .2s;}
+.csvw{display:flex;justify-content:center;}
+.csvw svg{width:100%;max-width:280px;}
 .zmk{pointer-events:none;text-anchor:middle;dominant-baseline:middle;}
 .cslb{font-size:7px;fill:rgba(255,255,255,.32);text-anchor:middle;}
 .cfb{width:100%;padding:10px;font-size:14px;font-weight:700;border-radius:12px;border:none;cursor:pointer;letter-spacing:.02em;transition:opacity .2s,transform .1s;flex-shrink:0;}
-.cfb:disabled{opacity:.2;cursor:not-allowed;background:rgba(255,255,255,.05);color:var(--tx3);}
+.cfb:disabled{opacity:.5;cursor:not-allowed;background:rgba(255,255,255,.08);color:var(--tx2);}
 .cfb.pa{background:var(--p1);color:#041008;}
 .cfb.pb{background:var(--p2);color:#06001a;}
 .cfb:not(:disabled):active{transform:scale(.98);}
@@ -150,19 +150,19 @@ body{font-family:'Helvetica Neue',Arial,sans-serif;
 .dlg-btn.ok-red{background:#e05252;color:#fff;}
 .dlg-btn.ok-warn{background:#d97706;color:#fff;}
 @media print{
-  body{background:#fff;color:#111;overflow:visible;}
-  .scr{height:auto;overflow:visible;max-width:100%;}
-  .shdr{border-bottom:1px solid #ccc;}
-  .stbody{overflow:visible;padding:10px;}
-  .print-btn,.bbtn{display:none;}
-  .ss{break-inside:avoid;}
-  .scd,.wrw,.hwp,.pie-card,.game-card{background:#f8f8f8;border:1px solid #ddd;}
-  .sv.ac,.game-val.ac{color:#1a7a3e;}
-  .sv.bc,.game-val.bc{color:#6a4fc4;}
-  .wlb.ac{color:#1a7a3e;}
-  .wlb.bc{color:#6a4fc4;}
-  .wp1{background:#1a7a3e;}
-  .wp2{background:#6a4fc4;}
+  @page{size:A4 portrait;margin:10mm;}
+  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
+  body{background:#0c2010!important;color:#e4f0e6!important;overflow:visible;}
+  .scr{display:none!important;}
+  #ss{display:block!important;height:auto!important;overflow:visible!important;max-width:100%!important;}
+  .shdr{border-bottom:.5px solid rgba(180,220,180,.2);}
+  .stbody{overflow:visible!important;padding:8px!important;}
+  .print-btn,.bbtn{display:none!important;}
+  .ss{break-inside:avoid;margin-bottom:10px;}
+  .pie-row{gap:6px;}
+  .pie-card,.scd,.wrw,.hwp,.game-card{background:rgba(8,20,11,.9)!important;border:.5px solid rgba(180,220,180,.2)!important;}
+  .stit2{font-size:9px;margin-bottom:5px;}
+  .scds{margin-bottom:7px;}
 }
 </style>
 </head>
@@ -227,30 +227,30 @@ body{font-family:'Helvetica Neue',Arial,sans-serif;
       </div>
     </div>
     <!-- ②③ -->
-    <div class="card23" id="card23" style="opacity:.35;pointer-events:none">
-      <div class="col-shot">
-        <div class="clb" style="margin-bottom:4px;">② ショット</div>
-        <div id="sbtns" style="display:flex;flex-direction:column;gap:4px;">
-          <button class="shb" onclick="selSh('サービスエース',this)">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>サービスエース
-          </button>
-          <button class="shb" onclick="selSh('DF',this)">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>DF
-          </button>
-          <button class="shb" onclick="selSh('ストローク',this)">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><line x1="2" y1="12" x2="22" y2="12"/></svg>ストローク
-          </button>
-          <button class="shb" onclick="selSh('ボレー',this)">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/><path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2"/><path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"/><path d="M18 11a2 2 0 1 1 4 0v3a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg>ボレー
-          </button>
-          <button class="shb" onclick="selSh('スマッシュ',this)">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>スマッシュ
-          </button>
-          <button class="shb" onclick="selSh('ドロップ',this)">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>ドロップ
-          </button>
-        </div>
+    <div class="card23" id="card23" style="opacity:.85;pointer-events:none">
+      <!-- ② shot grid 2×3 -->
+      <div class="clb" style="margin-bottom:4px;">② ショット</div>
+      <div id="sbtns" class="shot-grid23">
+        <button class="shb" onclick="selSh('サービスエース',this)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>サービスエース
+        </button>
+        <button class="shb" onclick="selSh('DF',this)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>DF
+        </button>
+        <button class="shb" onclick="selSh('ストローク',this)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><line x1="2" y1="12" x2="22" y2="12"/></svg>ストローク
+        </button>
+        <button class="shb" onclick="selSh('ボレー',this)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/><path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2"/><path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"/><path d="M18 11a2 2 0 1 1 4 0v3a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg>ボレー
+        </button>
+        <button class="shb" onclick="selSh('スマッシュ',this)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>スマッシュ
+        </button>
+        <button class="shb" onclick="selSh('ドロップ',this)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>ドロップ
+        </button>
       </div>
+      <!-- ③ court below -->
       <div class="col-court" id="col-court">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
           <div class="clb" style="margin-bottom:0;display:flex;align-items:center;gap:6px;">
@@ -778,7 +778,7 @@ function rpt(){
   document.getElementById('bp1').className='wb wa';
   document.getElementById('bp2').className='wb wb2';
   document.querySelectorAll('#sbtns .shb').forEach(b=>b.classList.remove('sl'));
-  const c=document.getElementById('card23'); c.style.opacity='.35'; c.style.pointerEvents='none';
+  const c=document.getElementById('card23'); c.style.opacity='.85'; c.style.pointerEvents='none';
   document.getElementById('cfb').disabled=true;
   document.getElementById('cfb').className='cfb';
   document.getElementById('cfb').textContent='ポイント確定';
@@ -860,51 +860,53 @@ function rSt(){
   const SC=['#4ade80','#f87171','#a78bfa','#fbbf24','#60a5fa','#fb923c'];
   const scA={},scB={};SH.forEach(s=>{scA[s]=0;scB[s]=0;});
   S.log.forEach(l=>{if(!l.shot)return;if(l.win==='p1')scA[l.shot]=(scA[l.shot]||0)+1;else scB[l.shot]=(scB[l.shot]||0)+1;});
-  const sc={};SH.forEach(s=>sc[s]=(scA[s]||0)+(scB[s]||0));
-  const mx=Math.max(...Object.values(sc),1);
-  function catLast(court){
-    if(!court)return null;
-    const parts=court.split(' → '),last=parts[parts.length-1];
-    if(last.includes('BL'))return'BLオーバー';
-    if(last.includes('サイドオーバー'))return'サイドオーバー';
-    if(last.includes('ネット'))return'ネット';
-    return'イン';
-  }
-  const oA={イン:0,BLオーバー:0,サイドオーバー:0,ネット:0};
-  const oB={イン:0,BLオーバー:0,サイドオーバー:0,ネット:0};
-  S.log.forEach(l=>{if(!l.court)return;const c=catLast(l.court);if(l.win==='p1')oA[c]++;else oB[c]++;});
-  const totA=Object.values(oA).reduce((a,b)=>a+b,0);
-  const totB=Object.values(oB).reduce((a,b)=>a+b,0);
-  const outC={イン:'#4ade80',BLオーバー:'#f87171',サイドオーバー:'#fbbf24',ネット:'#60a5fa'};
-  const wz={};
+
+  // ── Heatmap: 2nd tap zone for ALL points (where the ball landed) ──
+  const wz={};   // your winning shots (2nd tap when you win)
+  const wz2={};  // opponent's winning shots (2nd tap when opponent wins)
   S.log.forEach(l=>{
     if(!l.court)return;
-    const parts=l.court.split(' → '),last=parts[parts.length-1];
-    if(last.startsWith('Point!!')||last.startsWith('2:')){
-      const zn=last.replace(/^[^:]+:/,'');
-      const zi=Object.entries(ZN_LABEL).find(([,v])=>v===zn)?.[0];
-      if(zi&&!isOut(zi)&&!isServeZone(zi))wz[zi]=(wz[zi]||0)+1;
-    }
+    const parts=l.court.split(' → ');
+    if(parts.length<2)return;
+    const second=parts[1];
+    if(!second)return;
+    const zn=second.replace(/^[^:]+:/,'');
+    const zi=Object.entries(ZN_LABEL).find(([,v])=>v===zn)?.[0];
+    if(!zi||isOut(zi)||isServeZone(zi))return;
+    if(l.win==='p1') wz[zi]=(wz[zi]||0)+1;
+    else             wz2[zi]=(wz2[zi]||0)+1;
   });
   const mxz=Math.max(...Object.values(wz),1);
+  const mxz2=Math.max(...Object.values(wz2),1);
+
+  // ── Point sequence for line chart (chronological, oldest first) ──
+  // S.log is newest-first, so reverse
+  const seq=[...S.log].reverse();
+  const lineChart=mkLineChart(seq);
+
   el.innerHTML=`
   <button class="print-btn" onclick="window.print()">
     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
     印刷 / PDF
   </button>
-  <div class="ss"><div class="stit2">ゲームスコア</div>
-    <div class="game-cards">
-      <div class="game-card"><div class="game-card-lbl"><span class="dot a"></span>あなた</div><div class="game-val ac">${S.g1}<span style="font-size:13px;font-weight:400;color:var(--tx3)"> G</span></div></div>
-      <div class="game-card"><div class="game-card-lbl"><span class="dot b"></span>相手</div><div class="game-val bc">${S.g2}<span style="font-size:13px;font-weight:400;color:var(--tx3)"> G</span></div></div>
-    </div>
-  </div>
-  <div class="ss"><div class="stit2">ポイント</div>
-    <div class="scds">
-      <div class="scd"><div class="sv ac">${p1w}</div><div class="slb">あなた (${Math.round(p1w/tot*100)}%)</div></div>
-      <div class="scd"><div class="sv bc">${p2w}</div><div class="slb">相手 (${Math.round(p2w/tot*100)}%)</div></div>
+  <div class="ss"><div class="stit2">スコア</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+      <div class="scd" style="position:relative;">
+        <div class="p-label" style="font-size:10px;color:var(--tx2);margin-bottom:4px;display:flex;align-items:center;justify-content:center;gap:4px;"><span class="dot a"></span>あなた</div>
+        <div class="sv ac">${S.g1}<span style="font-size:13px;font-weight:400;color:var(--tx3)">G</span> ${p1w}<span style="font-size:13px;font-weight:400;color:var(--tx3)">pt</span></div>
+        <div class="slb">${Math.round(p1w/tot*100)}%</div>
+      </div>
+      <div class="scd">
+        <div class="p-label" style="font-size:10px;color:var(--tx2);margin-bottom:4px;display:flex;align-items:center;justify-content:center;gap:4px;"><span class="dot b"></span>相手</div>
+        <div class="sv bc">${S.g2}<span style="font-size:13px;font-weight:400;color:var(--tx3)">G</span> ${p2w}<span style="font-size:13px;font-weight:400;color:var(--tx3)">pt</span></div>
+        <div class="slb">${Math.round(p2w/tot*100)}%</div>
+      </div>
     </div>
     <div class="wrw"><div class="wrow"><div class="wp1" style="flex:${p1w}"></div><div class="wp2" style="flex:${p2w||.01}"></div></div>
-    <div class="wlbs"><span class="wlb ac">あなた ${p1w}pt</span><span class="wlb bc">相手 ${p2w}pt</span></div></div>
+    <div class="wlbs"><span class="wlb ac">あなた ${S.g1}G ${p1w}pt</span><span class="wlb bc">相手 ${S.g2}G ${p2w}pt</span></div></div>
+  </div>
+  <div class="ss"><div class="stit2">ポイント取得の流れ</div>
+    <div class="hwp">${lineChart}</div>
   </div>
   <div class="ss"><div class="stit2">ショット別（あなた vs 相手）</div>
     <div class="pie-row">
@@ -912,28 +914,95 @@ function rSt(){
       <div class="pie-card"><div class="pie-title" style="color:var(--p2)">相手</div>${mkPie(SH.map((s,i)=>({label:s,val:scB[s],color:SC[i]})),72)}<div class="pie-legend">${mkLeg(SH.map((s,i)=>({label:s,val:scB[s],color:SC[i]})),p2w)}</div></div>
     </div>
   </div>
-  <div class="ss"><div class="stit2">ショット別（棒グラフ）</div>
-    ${SH.map((s,i)=>`<div class="brr"><div class="brl">${s}</div><div class="brt"><div class="brf" style="width:${Math.round(sc[s]/mx*100)}%;background:${SC[i]}"></div></div><div class="brc">${sc[s]}</div></div>`).join('')}
-  </div>
-  <div class="ss"><div class="stit2">得点の傾向</div>
-    <div class="pie-row">
-      <div class="pie-card"><div class="pie-title" style="color:var(--p1)">あなたの得点</div>${mkPie(Object.keys(oA).map(k=>({label:k,val:oA[k],color:outC[k]})),72)}<div class="pie-legend">${mkLeg(Object.keys(oA).map(k=>({label:k,val:oA[k],color:outC[k]})),totA)}</div></div>
-      <div class="pie-card"><div class="pie-title" style="color:var(--p2)">相手の得点</div>${mkPie(Object.keys(oB).map(k=>({label:k,val:oB[k],color:outC[k]})),72)}<div class="pie-legend">${mkLeg(Object.keys(oB).map(k=>({label:k,val:oB[k],color:outC[k]})),totB)}</div></div>
+  <div class="ss"><div class="stit2">着弾ヒートマップ</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+      <div class="hwp">
+        <div style="font-size:10px;color:var(--p1);text-align:center;margin-bottom:6px;">あなたの得点</div>
+        <div class="hwi">${bhsv(wz,mxz,'74,222,128')}</div>
+        <div class="hwleg"><div class="hwlg"><div class="hwld" style="background:rgba(58,136,64,.4)"></div>少ない</div><div class="hwlg"><div class="hwld" style="background:rgba(74,222,128,.85)"></div>多い</div></div>
+      </div>
+      <div class="hwp">
+        <div style="font-size:10px;color:var(--p2);text-align:center;margin-bottom:6px;">相手の得点</div>
+        <div class="hwi">${bhsv(wz2,mxz2,'167,139,250')}</div>
+        <div class="hwleg"><div class="hwlg"><div class="hwld" style="background:rgba(58,136,64,.4)"></div>少ない</div><div class="hwlg"><div class="hwld" style="background:rgba(167,139,250,.85)"></div>多い</div></div>
+      </div>
     </div>
-  </div>
-  <div class="ss"><div class="stit2">決まった場所 ヒートマップ</div>
-    <div class="hwp"><div class="hwi">${bhsv(wz,mxz)}</div>
-    <div class="hwleg"><div class="hwlg"><div class="hwld" style="background:rgba(58,136,64,.4)"></div>少ない</div><div class="hwlg"><div class="hwld" style="background:rgba(251,191,36,.85)"></div>多い</div></div></div>
   </div>`;
 }
-function bhsv(wz,mxz){
+
+function mkLineChart(seq){
+  const n=seq.length;
+  if(n<2) return '<div style="color:var(--tx3);font-size:12px;text-align:center;padding:16px 0;">ポイントが2つ以上記録されると表示されます</div>';
+
+  const W=320,H=120,PL=22,PR=10,PT=14,PB=16;
+  const cw=W-PL-PR, ch=H-PT-PB;
+
+  // y=1 for p1 win, y=0 for p2 win at each point
+  const vals=seq.map(l=>l.win==='p1'?1:0);
+  const gameMarks=[];
+  seq.forEach((l,i)=>{if(l.game)gameMarks.push(i);});
+
+  const xStep=cw/Math.max(n-1,1);
+  const yP1=PT+ch*0.18;   // p1 line y position
+  const yP2=PT+ch*0.82;   // p2 line y position
+  const yMid=PT+ch/2;
+
+  const px=i=>PL+i*xStep;
+
+  let svg=`<svg viewBox="0 0 ${W} ${H}" width="100%" xmlns="http://www.w3.org/2000/svg" style="display:block;">`;
+
+  // mid divider
+  svg+=`<line x1="${PL}" y1="${yMid}" x2="${W-PR}" y2="${yMid}" stroke="rgba(255,255,255,.1)" stroke-width=".5" stroke-dasharray="3,4"/>`;
+
+  // game boundary markers
+  gameMarks.forEach(gi=>{
+    const gx=px(gi);
+    svg+=`<line x1="${gx}" y1="${PT}" x2="${gx}" y2="${H-PB}" stroke="rgba(255,255,255,.18)" stroke-width=".5" stroke-dasharray="2,3"/>`;
+    svg+=`<text x="${gx}" y="${PT-4}" style="font-size:6px;fill:rgba(255,255,255,.3);text-anchor:middle;">G</text>`;
+  });
+
+  // draw step line: each point jumps to p1 lane or p2 lane
+  // connect with vertical step between consecutive points
+  let linePath='';
+  vals.forEach((v,i)=>{
+    const x=px(i);
+    const y=v===1?yP1:yP2;
+    if(i===0){
+      linePath+=`M${x.toFixed(1)},${y.toFixed(1)}`;
+    } else {
+      const prevY=vals[i-1]===1?yP1:yP2;
+      // step: go vertical first, then horizontal
+      linePath+=` L${px(i-1).toFixed(1)},${y.toFixed(1)} L${x.toFixed(1)},${y.toFixed(1)}`;
+    }
+  });
+  svg+=`<path d="${linePath}" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="1" stroke-linejoin="round"/>`;
+
+  // dots colored by winner
+  vals.forEach((v,i)=>{
+    const x=px(i), y=v===1?yP1:yP2;
+    const c=v===1?'#4ade80':'#a78bfa';
+    svg+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3.5" fill="${c}"/>`;
+  });
+
+  // y axis labels
+  svg+=`<text x="${PL-3}" y="${yP1}" style="font-size:7px;fill:#4ade80;text-anchor:end;dominant-baseline:middle;">あなた</text>`;
+  svg+=`<text x="${PL-3}" y="${yP2}" style="font-size:7px;fill:#a78bfa;text-anchor:end;dominant-baseline:middle;">相手</text>`;
+
+  svg+=`</svg>`;
+  return svg;
+}
+
+
+function bhsv(wz,mxz,heatRgb){
+  // heatRgb: e.g. "74,222,128" for green, "167,139,250" for purple
+  heatRgb=heatRgb||'251,191,36';
   const z=mzIn();const ns='http://www.w3.org/2000/svg';
   let s=`<svg viewBox="0 0 220 280" style="max-width:180px;width:100%;" xmlns="${ns}">`;
   s+=`<rect x="${AL}" y="6" width="${AR-AL}" height="268" fill="${GRASS}"/>`;
   z.forEach(z=>{
     const cnt=wz[z.id]||0;
     s+=`<rect x="${z.x}" y="${z.y}" width="${z.w}" height="${z.h}" fill="transparent" stroke="rgba(255,255,255,.2)" stroke-width=".6"/>`;
-    if(cnt>0){const a=(0.15+cnt/mxz*0.75).toFixed(2);s+=`<rect x="${z.x}" y="${z.y}" width="${z.w}" height="${z.h}" fill="rgba(251,191,36,${a})"/>`;}
+    if(cnt>0){const a=(0.15+cnt/mxz*0.75).toFixed(2);s+=`<rect x="${z.x}" y="${z.y}" width="${z.w}" height="${z.h}" fill="rgba(${heatRgb},${a})"/>`;}
     if(cnt>0){const cx=z.x+z.w/2,cy=z.y+z.h/2;s+=`<text x="${cx}" y="${cy}" class="hct">${cnt}</text>`;}
   });
   const ln=(x1,y1,x2,y2)=>`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="rgba(255,255,255,.8)" stroke-width="1"/>`;
