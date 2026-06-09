@@ -178,6 +178,18 @@ body{font-family:'Helvetica Neue',Arial,sans-serif;
     </div>
   </div>
 </div>
+
+<div class="dlg-backdrop" id="dlg-mode">
+  <div class="dlg">
+    
+    <div class="dlg-title">試合形式を選択</div>
+    <div class="dlg-msg">さあ、試合を始めましょう！ダブルスかシングルスどちらで戦いますか？</div>
+    <div class="dlg-btns">
+      <button class="dlg-btn" style="background:var(--p1-bg,rgba(74,222,128,.15));color:var(--p1,#4ade80);border:.5px solid var(--p1-bd,rgba(74,222,128,.45));" onclick="confirmMode('doubles')">ダブルス</button>
+      <button class="dlg-btn" style="background:var(--p2-bg,rgba(167,139,250,.15));color:var(--p2,#a78bfa);border:.5px solid var(--p2-bd,rgba(167,139,250,.45));" onclick="confirmMode('singles')">シングルス</button>
+    </div>
+  </div>
+</div>
 <div class="dlg-backdrop" id="dlg-game">
   <div class="dlg">
     <div class="dlg-title">1ゲーム戻しますか？</div>
@@ -191,8 +203,12 @@ body{font-family:'Helvetica Neue',Arial,sans-serif;
 
 <!-- MAIN -->
 <div class="scr on" id="sm">
+
   <div class="hdr">
-    <div class="logo">Tennis<em>Log</em></div>
+    <div style="display:flex;align-items:baseline;gap:7px;">
+      <div class="logo">Tennis<em>Log</em></div>
+      <span id="mode-label" style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:8px;background:rgba(200,212,78,.12);color:var(--ball);border:.5px solid rgba(200,212,78,.35);">ダブルス</span>
+    </div>
     <div class="hdr-r">
       <button class="ibtn danger" onclick="showDlg('dlg-reset')">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg>
@@ -292,14 +308,19 @@ body{font-family:'Helvetica Neue',Arial,sans-serif;
 <div class="scr" id="ss">
   <div class="shdr">
     <button class="bbtn" onclick="goM()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
-    <div class="stit">統計</div>
+    <div class="logo" style="font-size:15px;">Tennis<em>Log</em></div>
+    <div class="stit" style="font-size:13px;color:var(--tx2);">統計</div>
+    <button class="print-btn" style="margin:0 0 0 auto;" onclick="window.print()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+      印刷
+    </button>
   </div>
   <div class="stbody" id="stbd"></div>
 </div>
 
 <script>
 const PT=['0','15','30','40','A'];
-let S={p1:0,p2:0,g1:0,g2:0,win:null,shot:null,taps:[],log:[],step:0};
+let S={p1:0,p2:0,g1:0,g2:0,win:null,shot:null,taps:[],log:[],step:0,mode:'doubles'};
 
 // ── Geometry ──
 const AL=10,SL=38,SR=182,AR=210,HM=(SL+SR)/2,S3=(SR-SL)/3;
@@ -321,20 +342,26 @@ function zoneHalf(id){
       'OUT_BTM','OUT_LEFT_B','OUT_RIGHT_B',SERVE_BTM].includes(id)) return 'btm';
   return 'mid';
 }
+function isAlley(id){
+  return['O_ALF','O_ALB','O_ARF','O_ARB','M_ALF','M_ALB','M_ARF','M_ARB'].includes(id);
+}
 function isOut(id){return id.startsWith('OUT_')||id==='NET';}
+function isOutForMode(id){
+  // In singles, alley zones count as out
+  return isOut(id)||(S.mode==='singles'&&isAlley(id));
+}
 function isServeZone(id){return id===SERVE_TOP||id===SERVE_BTM;}
 function isSBZone(id){return['O_SL','O_SR','M_SL','M_SR'].includes(id);}
-function isIn(id){return!isOut(id)&&!isServeZone(id);}
+function isIn(id){return!isOut(id)&&!isServeZone(id)&&!(S.mode==='singles'&&isAlley(id));}
 
 function winnerHalf(){
   if(!S.taps.length) return null;
   return zoneHalf(S.taps[0].zone);
 }
 function isTerminal(){
-  // Terminal means last tap was out/net AND we've reached the point end
   if(!S.taps.length) return false;
   const last = S.taps[S.taps.length-1].zone;
-  return isOut(last);
+  return isOutForMode(last);
 }
 
 // ── canTap: given current state, is zone tappable? ──
@@ -356,7 +383,8 @@ function canTap(id){
       else           return id==='M_SL'||id==='M_SR';
     }
     if(n === 2){
-      // 3rd: out/net only (2nd was always in-court SB)
+      // 3rd: out/net only, OR same SB zone as 2nd tap (2-bounce)
+      if(id === S.taps[1].zone) return true;
       return isOut(id);
     }
     return false;
@@ -372,12 +400,14 @@ function canTap(id){
     const zh = zoneHalf(id);
     // サービスエース・DF以外: 2タップ目はコート内のみ（アウト・ネット不可）
     const noOut = S.shot !== 'サービスエース' && S.shot !== 'DF';
-    if(noOut && isOut(id)) return false;
+    if(noOut && isOutForMode(id)) return false;
     return zh===lh||zh==='mid';
   }
   if(n === 2){
-    if(isOut(S.taps[1].zone)) return false;
-    return isOut(id);
+    if(isOutForMode(S.taps[1].zone)) return false;
+    // Allow same zone as 2nd tap (2-bounce = ball lands same zone twice)
+    if(id === S.taps[1].zone) return true;
+    return isOutForMode(id);
   }
   return false;
 }
@@ -395,7 +425,7 @@ function tapFill(idx){
   const z = S.taps[idx]?.zone;
   if(!z) return 'rgba(255,255,255,.25)';
   if(idx === 0) return winColor();   // 1st tap always winner color
-  if(isOut(z)){
+  if(isOutForMode(z)){
     // terminal (Point!!) → winner color (they won the point)
     return winColor();
   }
@@ -405,7 +435,7 @@ function tapFill(idx){
 function tapLabel(idx){
   const z = S.taps[idx]?.zone;
   if(idx === 0) return isServeZone(z)?'サーブ':'1';
-  if(z && isOut(z)) return 'Point!!';
+  if(z && isOutForMode(z)) return 'Point!!';
   return idx===1?'2':'Point!!';
 }
 function tapFs(idx){
@@ -512,24 +542,60 @@ function bcsv(){
 
   // ── In-court zones ──
   AZ_IN.forEach(z=>{
-    const tapIdx=S.taps.findIndex(t=>t.zone===z.id);
-    const tapped=tapIdx>=0;
-    const allowed=!locked&&!terminal&&canTap(z.id)&&!tapped;
-    const g=document.createElementNS(ns,'g');
+    // Find all taps on this zone
+    const tapIndices = S.taps.map((t,i)=>t.zone===z.id?i:-1).filter(i=>i>=0);
+    const tapped = tapIndices.length > 0;
+    const firstIdx = tapIndices[0] ?? -1;
+    const isAlleyZone = isAlley(z.id);
+    const isSinglesAlley = S.mode==='singles' && isAlleyZone;
+    const allowed = !locked && !terminal && canTap(z.id) && tapIndices.length === 0;
+    const g = document.createElementNS(ns,'g');
     if(!locked) g.addEventListener('click',()=>tapZ(z.id));
 
-    // highlight allowed zones with subtle glow border
-    const stroke = allowed ? 'rgba(255,255,255,.45)' : 'rgba(255,255,255,.18)';
+    const stroke = allowed ? 'rgba(255,255,255,.45)' : isSinglesAlley ? 'rgba(248,113,113,.3)' : 'rgba(255,255,255,.18)';
     const strokeW = allowed ? '1' : '.6';
-    const op = (!tapped && !allowed) ? '0.3' : '1';
-    g.appendChild(el('rect',{x:z.x,y:z.y,width:z.w,height:z.h,
-      fill: tapped ? tapFill(tapIdx) : allowed ? 'rgba(255,255,255,.06)' : 'transparent',
-      stroke, 'stroke-width':strokeW, opacity:op}));
+    const op = (!tapped && !allowed) ? (isSinglesAlley ? '0.55' : '0.3') : '1';
 
-    if(tapped){
+    // Check if this zone has BOTH tap 1 (in-rally) AND tap 2 (Point!!) = 2-bounce
+    const hasSplit = tapIndices.length === 2 && tapIndices.includes(1) && tapIndices.includes(2);
+
+    // In singles, shade alley zones red to indicate "out"
+    if(isSinglesAlley && !tapped){
+      g.appendChild(el('rect',{x:z.x,y:z.y,width:z.w,height:z.h,
+        fill:'rgba(248,113,113,.12)',stroke:'rgba(248,113,113,.3)','stroke-width':'.6',opacity:'0.8'}));
+    }
+    if(hasSplit){
+      // Draw split: top-left triangle = tap1 (loser color), bottom-right = tap2 (winner color)
+      const {x,y,w,h} = z;
+      // base rect border
+      g.appendChild(el('rect',{x,y,width:w,height:h,fill:'transparent',stroke,
+        'stroke-width':strokeW,opacity:op}));
+      // top-left triangle (2打 = rally = loseColor)
+      g.appendChild(el('polygon',{
+        points:`${x},${y} ${x+w},${y} ${x},${y+h}`,
+        fill:loseColor(),'stroke-width':'0'}));
+      // bottom-right triangle (Point!! = winColor)
+      g.appendChild(el('polygon',{
+        points:`${x+w},${y} ${x+w},${y+h} ${x},${y+h}`,
+        fill:winColor(),'stroke-width':'0'}));
+
+      // labels: "2" top-left, "Point!!" bottom-right
+      const m1=el('text',{x:x+w*0.25,y:y+h*0.3});
+      m1.setAttribute('style','font-size:8px;fill:#fff;font-weight:700;text-anchor:middle;dominant-baseline:middle;pointer-events:none;');
+      m1.textContent='2'; g.appendChild(m1);
+      const m2=el('text',{x:x+w*0.75,y:y+h*0.72});
+      m2.setAttribute('style','font-size:6px;fill:#fff;font-weight:700;text-anchor:middle;dominant-baseline:middle;pointer-events:none;');
+      m2.textContent='Point!!'; g.appendChild(m2);
+    } else {
+      g.appendChild(el('rect',{x:z.x,y:z.y,width:z.w,height:z.h,
+        fill: tapped ? tapFill(firstIdx) : allowed ? 'rgba(255,255,255,.06)' : 'transparent',
+        stroke, 'stroke-width':strokeW, opacity:op}));
+    }
+
+    if(tapped && !hasSplit){
       const m=el('text',{x:z.x+z.w/2,y:z.y+z.h/2});
-      m.setAttribute('style',`font-size:${tapFs(tapIdx)}px;fill:#fff;font-weight:700;text-anchor:middle;dominant-baseline:middle;pointer-events:none;`);
-      m.textContent=tapLabel(tapIdx); g.appendChild(m);
+      m.setAttribute('style',`font-size:${tapFs(firstIdx)}px;fill:#fff;font-weight:700;text-anchor:middle;dominant-baseline:middle;pointer-events:none;`);
+      m.textContent=tapLabel(firstIdx); g.appendChild(m);
     } else if(allowed && tCount < 3){
       // show step number hint in allowed zones
       const stepN = tCount+1;
@@ -683,12 +749,6 @@ function updateHint(){
 function tapZ(id){
   if(courtLocked()) return;
   if(isTerminal()) return;
-  const ei = S.taps.findIndex(t=>t.zone===id);
-  if(ei >= 0){
-    // Deselect: remove this tap AND all taps after it
-    S.taps.splice(ei);
-    bcsv(); return;
-  }
   if(!canTap(id)) return;
   S.taps.push({zone:id});
   bcsv();
@@ -721,6 +781,17 @@ function buildCourtStr(){
 }
 
 // ── UI handlers ──
+function setMode(m){
+  S.mode = m;
+  S.taps = [];
+  document.getElementById('mode-label').textContent = m==='doubles'?'ダブルス':'シングルス';
+  bcsv();
+}
+function confirmMode(m){
+  setMode(m);
+  closeDlg('dlg-mode');
+}
+
 function selW(p){
   S.win=p; S.step=1; S.taps=[];
   document.getElementById('bp1').className='wb wa'+(p==='p1'?' sl':'');
@@ -824,7 +895,13 @@ function doUndoGame(){
 }
 function showDlg(id){document.getElementById(id).classList.add('show');}
 function closeDlg(id){document.getElementById(id).classList.remove('show');}
-function doReset(){S={p1:0,p2:0,g1:0,g2:0,win:null,shot:null,taps:[],log:[],step:0};uSc();rpt();closeDlg('dlg-reset');}
+function doReset(){
+  S={p1:0,p2:0,g1:0,g2:0,win:null,shot:null,taps:[],log:[],step:0,mode:'doubles'};
+  uSc();rpt();
+  closeDlg('dlg-reset');
+  // Ask mode again after reset
+  setTimeout(()=>showDlg('dlg-mode'),150);
+}
 function goM(){document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));document.getElementById('sm').classList.add('on');}
 function goH(){rH();document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));document.getElementById('sh').classList.add('on');}
 function goSt(){rSt();document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));document.getElementById('ss').classList.add('on');}
@@ -885,10 +962,8 @@ function rSt(){
   const lineChart=mkLineChart(seq);
 
   el.innerHTML=`
-  <button class="print-btn" onclick="window.print()">
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-    印刷 / PDF
-  </button>
+
+  <div style='margin-bottom:8px;display:flex;align-items:center;gap:6px;'><span style='font-size:10px;color:var(--tx3);'>形式：</span><span style='font-size:11px;font-weight:600;color:var(--ball);'>${S.mode==='doubles'?'ダブルス':'シングルス'}</span></div>
   <div class="ss"><div class="stit2">スコア</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
       <div class="scd" style="position:relative;">
@@ -1014,6 +1089,8 @@ function bhsv(wz,mxz,heatRgb){
   return s+`</svg>`;
 }
 uSc();bcsv();
+// Show mode selection on first load
+showDlg('dlg-mode');
 </script>
 </body>
 </html>
